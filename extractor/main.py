@@ -240,6 +240,10 @@ def buildJson(events, event_labels, date):
     return result
 
 def main():
+    print("Printing all env vars:")
+    for key, value in os.environ.items():
+        print(f"{key}={value}")
+
     input_tvx = getInputFiles()
     raw_data = readFile(input_tvx)
     header = readHeader(raw_data)
@@ -254,10 +258,6 @@ def main():
     
     key = authenticate()
     print(f"Authenticated with key: {key}")
-
-    print("Printing all env vars:")
-    for key, value in os.environ.items():
-        print(f"{key}={value}")
     
 main()
 
