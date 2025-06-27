@@ -5,8 +5,8 @@ import requests
 def authenticate():
 
     PENNSIEVE_URL = "https://api.pennsieve.io"
-    email = os.getenv("API_TOKEN")
-    password = os.getenv("API_SECRET")
+    email = os.getenv("PENNSIEVE_API_KEY")
+    password = os.getenv("PENNSIEVE_API_SECRET")
 
     r = requests.get(f"{PENNSIEVE_URL}/authentication/cognito-config")
     r.raise_for_status()
