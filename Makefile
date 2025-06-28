@@ -13,3 +13,6 @@ run:
 	docker-compose -f docker-compose.yml down --remove-orphans
 	docker-compose -f docker-compose.yml build
 	docker-compose -f docker-compose.yml up --exit-code-from extractor
+
+run-interactive:
+	docker-compose -f docker-compose.yml run extractor

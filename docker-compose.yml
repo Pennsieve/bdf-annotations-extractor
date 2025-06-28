@@ -8,3 +8,6 @@ services:
     volumes:
       - ./data/input:/data/input:ro
       - ./data/output:/data/output
+    stdin_open: true
+    tty: true
+

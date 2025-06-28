@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from timeseries import authenticate
+from timeseries import *
 import json
 import os
 
@@ -124,9 +124,12 @@ def processEvent(eventHex):
         events = {}
         little_endian_annotation = convertToLittleEndian(annotation)
         events.update(getEventPhoticSimulation(little_endian_annotation[0]))
-        events.update(getMonthDayHour(little_endian_annotation[1]))
-        events.update(getMinutesSectionsFractionalSeconds(little_endian_annotation[2]))
+        monthDayHour =getMonthDayHour(little_endian_annotation[1])
+        events.update(monthDayHour)
+        minutesSeconds= getMinutesSectionsFractionalSeconds(little_endian_annotation[2])
+        events.update(minutesSeconds)
         annotation_details.append(events)
+        print(monthDayHour,minutesSeconds )
     
     return annotation_details
 
@@ -203,6 +206,8 @@ def buildJSON(event_labels, events,date):
 def buildJson(events, event_labels, date):
     tvx_datetime = datetime.strptime(date, "%d.%m.%y")
     result = []
+    prev_event_time = 0
+    base_start_time = 0
     
     for idx, event in enumerate(events):
         event_time = tvx_datetime.replace(
@@ -215,6 +220,7 @@ def buildJson(events, event_labels, date):
         start_epoch = int(event_time.timestamp() * 1000)
 
         if idx == 0:
+            base_start_time = event_time
             relative_start = 0
         else:
             prev_event_time = tvx_datetime.replace(
@@ -223,8 +229,8 @@ def buildJson(events, event_labels, date):
                 second=events[idx - 1]['seconds'],
                 microsecond=int((events[idx - 1]['fractional_seconds'] / 16) * 1e6)
             )
-            relative_start = int((event_time - prev_event_time).total_seconds() * 1000)
-
+            
+            relative_start = int((event_time - base_start_time).total_seconds() * 1000)
         label_index = event['event'] if event['event'] < len(event_labels) else 0
         label = event_labels[label_index]
 
@@ -233,31 +239,57 @@ def buildJson(events, event_labels, date):
             "label": label,
             "start": start_epoch,
             "end": start_epoch,
-            "relative_start": relative_start,
-            "relative_end": relative_start
+            "relative_start": relative_start * 1000,
+            "relative_end": relative_start * 1000
         })
+    if result:
+        result[-1]["relative_start"] -= 3_000_000
+        result[-1]["relative_end"] -= 3_000_000
 
     return result
 
 def main():
-    print("Printing all env vars:")
-    for key, value in os.environ.items():
-        print(f"{key}={value}")
-
     input_tvx = getInputFiles()
     raw_data = readFile(input_tvx)
     header = readHeader(raw_data)
     event_labels = getEventLabels(raw_data)
     annotations_block = findAnnotationsBlocks(raw_data)
     events = processEvent(annotations_block)
-    json_output = buildJson(events, event_labels, header['date'])
+    annotations = buildJson(events, event_labels, header['date'])
+    
     
     with open(f"{OUTPUT_DIR}/annotations.json", "w") as f:
-        json.dump(json_output, f, indent=2)
+        json.dump(annotations, f, indent=2)
         print(f"wrote out CSV to {f.name}")
     
-    key = authenticate()
-    print(f"Authenticated with key: {key}")
+    session_key = authenticate()
+    workflowData = getWorkflowData(session_key)
+    packageIds = [package for package in workflowData['packageIds']]
+
+    if len(packageIds) > 1:
+        raise ValueError(f"Expected exactly one package in workflow, found {len(packageIds)}")
+
+    datasetId = workflowData['datasetId']
+    print(f"Dataset ID: {datasetId}")
+    bdfPackage = getBDFPackageId(session_key, datasetId)
+    print(f"BDF Package ID: {bdfPackage['package_id']}")
+    annotationLayer = createAnnotationLayer(session_key, bdfPackage['package_id'])
+    print(f"Annotation Layer Created: {annotationLayer}")
+    channels = getChannels(session_key, annotationLayer['timeSeriesId'])
+    print(f"Channels: {channels}")
+    timeseriesIdPackageName = annotationLayer['timeSeriesId']
+    print(f"Timeseries ID Package Name: {timeseriesIdPackageName}")
+    timeseriesId =  annotationLayer['id']
+    print(f"Timeseries ID: {timeseriesId}")
+
+    createAnnotation(session_key,channels,timeseriesId,timeseriesIdPackageName,annotations)
+
+
+
+
+    
+
+
     
 main()
 
