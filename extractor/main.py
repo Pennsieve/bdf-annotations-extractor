@@ -129,7 +129,6 @@ def processEvent(eventHex):
         minutesSeconds= getMinutesSectionsFractionalSeconds(little_endian_annotation[2])
         events.update(minutesSeconds)
         annotation_details.append(events)
-        print(monthDayHour,minutesSeconds )
     
     return annotation_details
 

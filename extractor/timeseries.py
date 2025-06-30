@@ -183,7 +183,8 @@ def createAnnotation(session_key,channels,timeseriesId,timeseriesIdPackageName,a
         response = requests.post(url, json=params, headers=headers)
         response.raise_for_status()
 
-        print(url, params, headers)
-        print(response.text)
+        if response.status_code != 201:
+            print(f"Failed to create annotation: {response.text}")
+            continue
     
     return json.loads(response.text)
