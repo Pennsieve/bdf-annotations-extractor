@@ -59,7 +59,7 @@ def getBDFPackageId(session_key, dataset_id):
     '''
 
     # Construct URL
-    url = f"https://api.pennsieve.io/datasets/{dataset_id}"
+    url = f"https://api.pennsieve.io/datasets/{dataset_id}/packages"
 
     headers = {
         "Authorization": f"Bearer {session_key}",
@@ -72,7 +72,7 @@ def getBDFPackageId(session_key, dataset_id):
     data = response.json()
 
     # Extract children list (packages)
-    packages = data.get("children", [])
+    packages = data.get("packages", [])
     print(f"Found {len(packages)} packages in dataset {dataset_id}")
 
     # Find packages ending in .bdf (case-insensitive)
