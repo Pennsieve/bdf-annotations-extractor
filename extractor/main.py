@@ -124,11 +124,12 @@ def processEvent(eventHex):
         events = {}
         little_endian_annotation = convertToLittleEndian(annotation)
         events.update(getEventPhoticSimulation(little_endian_annotation[0]))
-        monthDayHour =getMonthDayHour(little_endian_annotation[1])
-        events.update(monthDayHour)
-        minutesSeconds= getMinutesSectionsFractionalSeconds(little_endian_annotation[2])
-        events.update(minutesSeconds)
+        dateTimeHeader =parseDatetimeHeader(little_endian_annotation[1])
+        events.update(dateTimeHeader)
+        dateTimeDetails= parseTimeDetails(little_endian_annotation[2])
+        events.update(dateTimeDetails)
         annotation_details.append(events)
+        print(events)
     
     return annotation_details
 
@@ -177,7 +178,7 @@ def getEventPhoticSimulation(word):
     
     pass
 
-def getMonthDayHour(word):
+def parseDatetimeHeader(word):
     binary = hexToBinary(word)
     month = int(binary[0:4], 2)
     day = int(binary[4:9], 2)
@@ -188,7 +189,7 @@ def getMonthDayHour(word):
         'hour': hour
     }
 
-def getMinutesSectionsFractionalSeconds(word):
+def parseTimeDetails(word):
     binary = hexToBinary(word)
     minute = int(binary[0:6], 2)
     seconds = int(binary[6:12], 2)
@@ -282,13 +283,6 @@ def main():
     print(f"Timeseries ID: {timeseriesId}")
 
     createAnnotation(session_key,channels,timeseriesId,timeseriesIdPackageName,annotations)
-
-
-
-
-    
-
-
     
 main()
 
