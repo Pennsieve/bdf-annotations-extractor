@@ -73,6 +73,7 @@ def getBDFPackageId(session_key, dataset_id):
 
     # Extract children list (packages)
     packages = data.get("children", [])
+    print(f"Found {len(packages)} packages in dataset {dataset_id}")
 
     # Find packages ending in .bdf (case-insensitive)
     bdf_packages = [
@@ -80,6 +81,7 @@ def getBDFPackageId(session_key, dataset_id):
         for pkg in packages
         if pkg.get("content", {}).get("name", "").lower().endswith(".bdf")
     ]
+    print(f"Found {len(bdf_packages)} .bdf packages in dataset {dataset_id}")
 
     if len(bdf_packages) == 0:
         raise Exception(f"No .bdf package found in dataset {dataset_id}")
