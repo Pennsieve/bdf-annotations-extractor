@@ -77,7 +77,7 @@ def getBDFPackageId(session_key, dataset_id):
 
     # Find packages ending in .bdf (case-insensitive)
     bdf_packages = [
-        {"package_id": pkg["content"]["id"], "name": pkg["content"]["name"]}
+        {"package_id": pkg["content"]["nodeId"], "name": pkg["content"]["name"]}
         for pkg in packages
         if pkg.get("content", {}).get("name", "").lower().endswith(".bdf")
     ]
