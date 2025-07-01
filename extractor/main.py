@@ -194,12 +194,7 @@ def parseTimeDetails(word):
     minute = int(binary[0:6], 2)
     seconds = int(binary[6:12], 2)
     fractional_seconds = int(binary[12:], 2)
-    
-    # Fraction seconds are in 1/16th of a second
-    # If fractional seconds are 9 or more, increment seconds by 1
-    # This follows what Persyst and  Trackit software does
-    if fractional_seconds >= 9:
-        seconds += 1        
+        
     return {
         'minute': minute,
         'seconds': seconds,
@@ -214,13 +209,14 @@ def buildJson(events, event_labels, date):
     result = []
     prev_event_time = 0
     base_start_time = 0
-    
+    MICROSECONDS_PER_16TH_SECOND = int(1_000_000 / 16)  # 62_500
+
     for idx, event in enumerate(events):
         event_time = tvx_datetime.replace(
             hour=event['hour'],
             minute=event['minute'],
             second=event['seconds'],
-            microsecond=int((event['fractional_seconds'] / 16) * 1e6)
+            microsecond=round((int(event['fractional_seconds']) * MICROSECONDS_PER_16TH_SECOND ))
         )
 
         start_epoch = int(event_time.timestamp() * 1000)
