@@ -194,6 +194,12 @@ def parseTimeDetails(word):
     minute = int(binary[0:6], 2)
     seconds = int(binary[6:12], 2)
     fractional_seconds = int(binary[12:], 2)
+    
+    # Fraction seconds are in 1/16th of a second
+    # If fractional seconds are 9 or more, increment seconds by 1
+    # This follows what Persyst and  Trackit software does
+    if fractional_seconds >= 9:
+        seconds += 1        
     return {
         'minute': minute,
         'seconds': seconds,
